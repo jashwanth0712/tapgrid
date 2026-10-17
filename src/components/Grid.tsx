@@ -30,6 +30,7 @@ export function Grid({ year, category, entries, onTap }: Props) {
   const todayKey = toKey(new Date());
   const weeks = useMemo(() => buildYear(year), [year, todayKey]);
   const scroller = useRef<React.ComponentRef<typeof ScrollView>>(null);
+  const viewW = useRef(0);
   const todayWeek = weeks.findIndex((w) => w.cells.some((c) => c?.key === todayKey));
 
   const tap = (day: string) => {
@@ -39,12 +40,15 @@ export function Grid({ year, category, entries, onTap }: Props) {
 
   return (
     <ScrollView
+      key={year}
       ref={scroller}
       horizontal
+      onLayout={(e) => (viewW.current = e.nativeEvent.layout.width)}
       showsHorizontalScrollIndicator={false}
       contentContainerStyle={styles.pad}
       onContentSizeChange={() => {
-        const x = todayWeek >= 0 ? todayWeek * (CELL + GAP) - 120 : 9999;
+        // centre today's column in the viewport; other years start at January
+        const x = todayWeek >= 0 ? 16 + todayWeek * (CELL + GAP) + CELL / 2 - viewW.current / 2 : 0;
         scroller.current?.scrollTo({ x: Math.max(0, x), animated: false });
       }}
     >
